@@ -1,0 +1,990 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Study Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1f3c;
+    --navy2: #1a3358;
+    --blue: #2563eb;
+    --blue-light: #eff4ff;
+    --blue-mid: #dbeafe;
+    --green: #166534;
+    --green-bg: #dcfce7;
+    --red: #9b1c1c;
+    --red-bg: #fee2e2;
+    --amber: #78350f;
+    --amber-bg: #fef3c7;
+    --border: #e5e7eb;
+    --bg: #f0f4f8;
+    --white: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --radius: 10px;
+    --shadow: 0 1px 4px rgba(0,0,0,.06), 0 6px 20px rgba(0,0,0,.07);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--navy);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .site-header h1 {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    flex: 1;
+    text-transform: uppercase;
+    opacity: .95;
+  }
+  .header-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.45);
+    margin-right: 4px;
+  }
+  .exam-selector select {
+    padding: 6px 12px;
+    font-size: 13.5px;
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 500;
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 6px;
+    cursor: pointer;
+    background: rgba(255,255,255,.08);
+    color: #ffffff;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .exam-selector select:hover,
+  .exam-selector select:focus { border-color: rgba(255,255,255,.5); }
+  .exam-selector select option { background: #1a3358; color: #fff; }
+  .timer-pill {
+    background: rgba(255,255,255,.1);
+    border: 1.5px solid rgba(255,255,255,.18);
+    border-radius: 6px;
+    padding: 5px 14px;
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #ffffff;
+    letter-spacing: 1px;
+    min-width: 78px;
+    text-align: center;
+  }
+  .timer-pill.warning {
+    background: #dc2626;
+    border-color: #dc2626;
+    animation: blink .7s infinite alternate;
+  }
+  @keyframes blink { from {opacity:1} to {opacity:.55} }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    height: 3px;
+    background: #cbd5e1;
+    position: sticky;
+    top: 60px;
+    z-index: 99;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+    transition: width .35s ease;
+  }
+
+  /* ── PAGE ── */
+  .page-body {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 32px 16px 72px;
+  }
+  .exam-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  /* ── SECTION CARD ── */
+  .section {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .section-head {
+    background: var(--navy);
+    padding: 13px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    background: rgba(255,255,255,.1);
+    padding: 2px 8px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .section-head h2 {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .2px;
+  }
+  .section-body { padding: 18px 20px 20px; }
+
+  .instructions {
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--text);
+    background: var(--blue-light);
+    border-left: 3px solid var(--blue);
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 14px;
+  }
+
+  /* ── HINT ── */
+  .hint-toggle {
+    display: inline-block;
+    background: none;
+    border: 1.5px solid #cbd5e1;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 500;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    transition: border-color .15s, color .15s;
+    letter-spacing: .2px;
+  }
+  .hint-toggle:hover { border-color: var(--blue); color: var(--blue); }
+  .hint-box {
+    background: var(--amber-bg);
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 6px 6px 0;
+    padding: 9px 14px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--amber);
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  /* ── QUESTIONS ── */
+  .question {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .question:last-child { border-bottom: none; }
+  .question > label:first-child {
+    flex: 1 1 240px;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 400;
+  }
+  .question input[type="text"] {
+    flex: 0 0 190px;
+    padding: 7px 11px;
+    font-size: 14px;
+    font-family: 'Inter', Arial, sans-serif;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .question input[type="text"]:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+  }
+  .question input[type="text"]:disabled { background: #f9fafb; }
+
+  /* multiple choice */
+  .mc-options { display: flex; flex-wrap: wrap; gap: 7px; flex: 100%; padding: 3px 0; }
+  .mc-options label {
+    background: #f8fafc;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 16px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text);
+    transition: border-color .15s, background .15s;
+    user-select: none;
+  }
+  .mc-options label:hover { border-color: var(--blue); background: var(--blue-light); }
+  .mc-options input[type="radio"] { display: none; }
+  .mc-options label:has(input:checked) { border-color: var(--blue); background: var(--blue-mid); color: var(--navy); }
+
+  /* dropdown */
+  .question select {
+    padding: 7px 11px;
+    font-size: 14px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    background: white;
+    color: var(--text);
+    outline: none;
+    transition: border-color .18s;
+  }
+  .question select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+
+  /* writing */
+  .question.writing-wrap { display: block; }
+  .writing-area {
+    width: 100%;
+    min-height: 148px;
+    font-size: 14px;
+    font-family: 'Inter', Arial, sans-serif;
+    line-height: 1.75;
+    padding: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    resize: vertical;
+    outline: none;
+    color: var(--text);
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .writing-area:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+  .writing-area:disabled { background: #f9fafb; }
+  .word-count { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .word-count.ok { color: var(--green); font-weight: 600; }
+
+  /* feedback */
+  .feedback {
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 5px;
+    display: none;
+    flex: 100%;
+    line-height: 1.5;
+  }
+  .feedback.correct { background: var(--green-bg); color: var(--green); display: block; }
+  .feedback.wrong   { background: var(--red-bg);   color: var(--red);   display: block; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 9px 22px;
+    font-size: 13.5px;
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: .2px;
+    transition: opacity .15s, transform .1s, box-shadow .15s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { opacity: .88; box-shadow: 0 4px 14px rgba(37,99,235,.3); }
+  .btn-outline { background: white; color: var(--navy); border: 1.5px solid var(--border); }
+  .btn-outline:hover { background: #f1f5f9; }
+  .btn-navy { background: var(--navy); color: white; }
+  .btn-navy:hover { opacity: .85; }
+  .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+
+  /* ── RESULTS ── */
+  #results-panel {
+    display: none;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 36px 28px;
+    margin-top: 20px;
+  }
+  .results-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .score-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .score-big {
+    font-size: 54px;
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-pct {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--blue);
+  }
+  .score-msg {
+    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .grade-badge {
+    display: block;
+    width: fit-content;
+    margin: 0 auto 24px;
+    padding: 5px 28px;
+    border-radius: 5px;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 3px;
+  }
+  .divider { height: 1px; background: var(--border); margin: 22px 0; }
+  .section-scores table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .section-scores thead th {
+    text-align: left;
+    padding: 9px 14px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: #f8fafc;
+    border-bottom: 1.5px solid var(--border);
+  }
+  .section-scores td { padding: 10px 14px; border-bottom: 1px solid #f1f4f8; }
+  .section-scores tbody tr:last-child td { border-bottom: none; }
+  .section-scores tbody tr:hover td { background: #fafbfd; }
+  .pct-cell { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 640px) {
+    .site-header { padding: 0 14px; }
+    .page-body { padding: 20px 10px 56px; }
+    .section-head { padding: 11px 14px; }
+    .section-body { padding: 14px; }
+    .score-big { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>English Study Tool</h1>
+  <div class="exam-selector">
+    <span class="header-label">Exam</span>
+    <select id="examSelect" onchange="loadExam()">
+      <option value="0">Exam 1 — Basics</option>
+      <option value="1">Exam 2 — Daily Life</option>
+      <option value="2">Exam 3 — Intermediate</option>
+    </select>
+  </div>
+  <div class="timer-pill" id="timerDisplay">35:00</div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<div class="page-body">
+<div id="examContainer"></div>
+
+<div id="results-panel">
+  <div class="results-label">Your Results</div>
+  <div class="score-row">
+    <div class="score-big" id="scoreBig"></div>
+    <div class="score-pct" id="scorePct"></div>
+  </div>
+  <div class="score-msg" id="scoreMsg"></div>
+  <div id="gradeBadgeWrap"></div>
+  <div class="divider"></div>
+  <div class="section-scores" id="sectionScores"></div>
+  <div class="button-row" style="justify-content:center;margin-top:24px">
+    <button class="btn btn-primary" onclick="retakeExam()">Retake Exam</button>
+    <button class="btn btn-outline" onclick="reviewAnswers()">Review Answers</button>
+    <button class="btn btn-navy" onclick="nextExam()">Next Exam</button>
+  </div>
+</div>
+</div>
+
+<script>
+const EXAMS = [
+{
+  title: "Exam 1 — Basics",
+  time: 35,
+  sections: [
+    {
+      number: 1, title: "Verb To Be",
+      instructions: "Complete the sentences using <b>am, is,</b> or <b>are</b>.",
+      hint: "Use <b>am</b> with I. Use <b>is</b> with he/she/it. Use <b>are</b> with you/we/they.",
+      questions: [
+        { id:"e1q1",  type:"fill", text:"1. She ___ a student.", answer:"is" },
+        { id:"e1q2",  type:"fill", text:"2. I ___ from Mexico.", answer:"am" },
+        { id:"e1q3",  type:"fill", text:"3. They ___ happy.", answer:"are" },
+        { id:"e1q4",  type:"fill", text:"4. He ___ 25 years old.", answer:"is" },
+        { id:"e1q5",  type:"fill", text:"5. We ___ ready.", answer:"are" }
+      ]
+    },
+    {
+      number: 2, title: "Classification",
+      instructions: "Write: <b>Food, Job,</b> or <b>Place</b>.",
+      hint: "Food = something you eat. Job = type of work. Place = a location.",
+      questions: [
+        { id:"e1q6",  type:"fill", text:"6. Apple", answer:"food" },
+        { id:"e1q7",  type:"fill", text:"7. Teacher", answer:"job" },
+        { id:"e1q8",  type:"fill", text:"8. Hospital", answer:"place" },
+        { id:"e1q9",  type:"fill", text:"9. Bread", answer:"food" },
+        { id:"e1q10", type:"fill", text:"10. Pilot", answer:"job" }
+      ]
+    },
+    {
+      number: 3, title: "Reading Comprehension",
+      instructions: "Read the text and answer.<br><br><i>Juan lives in Guadalajara. He works in a hospital and studies English at night. Every morning he drinks coffee before going to work.</i>",
+      hint: "Read carefully — the answers are directly in the text.",
+      questions: [
+        { id:"e1q11", type:"fill", text:"11. Where does Juan live?", answer:"guadalajara" },
+        { id:"e1q12", type:"fill", text:"12. Where does he work?", answer:"hospital" },
+        { id:"e1q13", type:"fill", text:"13. What does he study?", answer:"english" },
+        { id:"e1q14", type:"fill", text:"14. When does he study?", answer:"at night" },
+        { id:"e1q15", type:"fill", text:"15. What does he drink?", answer:"coffee" }
+      ]
+    },
+    {
+      number: 4, title: "Tense Transformation",
+      instructions: "Change the verb to the requested tense.",
+      hint: "Regular past = verb + <b>ed</b>. Irregular verbs have special forms. -ING = verb + <b>ing</b>.",
+      questions: [
+        { id:"e1q16", type:"fill", text:"16. I work → Past", answer:"worked" },
+        { id:"e1q17", type:"fill", text:"17. She eats → Past", answer:"ate" },
+        { id:"e1q18", type:"fill", text:"18. They play → -ING", answer:"playing" },
+        { id:"e1q19", type:"fill", text:"19. He studies → Past", answer:"studied" },
+        { id:"e1q20", type:"fill", text:"20. We read → -ING", answer:"reading" }
+      ]
+    },
+    {
+      number: 5, title: "Question Formation",
+      instructions: "Rewrite the sentence as a question using <b>Do you</b>.",
+      hint: "Structure: <b>Do you</b> + base verb + rest of sentence + <b>?</b>",
+      questions: [
+        { id:"e1q21", type:"fill", text:"21. You like pizza.", answer:"do you like pizza?" },
+        { id:"e1q22", type:"fill", text:"22. You study English.", answer:"do you study english?" }
+      ]
+    },
+    {
+      number: 6, title: "Irregular Verbs",
+      instructions: "Write the simple past form.",
+      hint: "go→went, see→saw, buy→bought, have→had, eat→ate.",
+      questions: [
+        { id:"e1q23", type:"fill", text:"23. go →", answer:"went" },
+        { id:"e1q24", type:"fill", text:"24. see →", answer:"saw" },
+        { id:"e1q25", type:"fill", text:"25. buy →", answer:"bought" }
+      ]
+    },
+    {
+      number: 7, title: "Travel Reading",
+      instructions: "Read and answer.<br><br><i>Laura is traveling to Barcelona next month because she wants to visit museums. She feels excited because it is her first trip to Europe.</i>",
+      hint: "Look for keywords in your answer — names, places, feelings.",
+      questions: [
+        { id:"e1q26", type:"fill", text:"26. Where is Laura traveling?", answer:"barcelona" },
+        { id:"e1q27", type:"fill", text:"27. Why is she traveling?", answer:"to visit museums" },
+        { id:"e1q28", type:"fill", text:"28. How does she feel?", answer:"excited" }
+      ]
+    },
+    {
+      number: 8, title: "Self Introduction (Writing)",
+      instructions: "Write a personal introduction including name, age, city, studies and daily routine.<br><b>Minimum: 60 words.</b>",
+      hint: "Use: My name is… / I am… years old / I live in… / I study… / Every day I…",
+      questions: [ { id:"e1q29", type:"writing", text:"", minWords: 60 } ]
+    },
+    {
+      number: 9, title: "Email Writing",
+      instructions: "Write an email to a friend describing your activities and plans.<br><b>Minimum: 80 words.</b>",
+      hint: "Start with: Hi [name], / How are you? / I wanted to tell you… / See you soon!",
+      questions: [ { id:"e1q30", type:"writing", text:"", minWords: 80 } ]
+    }
+  ]
+},
+{
+  title: "Exam 2 — Daily Life",
+  time: 35,
+  sections: [
+    {
+      number: 1, title: "Present Simple",
+      instructions: "Choose the correct verb form.",
+      hint: "With he/she/it add <b>-s</b> or <b>-es</b>. With I/you/we/they use the base form.",
+      questions: [
+        { id:"e2q1", type:"mc", text:"1. She ___ to school every day.", options:["go","goes","going","gone"], answer:"goes" },
+        { id:"e2q2", type:"mc", text:"2. They ___ lunch at noon.", options:["eats","eating","eat","ate"], answer:"eat" },
+        { id:"e2q3", type:"mc", text:"3. He ___ coffee in the morning.", options:["drink","drinks","drank","drinking"], answer:"drinks" },
+        { id:"e2q4", type:"mc", text:"4. I ___ my homework after school.", options:["does","do","did","doing"], answer:"do" },
+        { id:"e2q5", type:"mc", text:"5. We ___ English on Mondays.", options:["studies","study","studied","studying"], answer:"study" }
+      ]
+    },
+    {
+      number: 2, title: "Prepositions of Time",
+      instructions: "Choose <b>at, on,</b> or <b>in</b>.",
+      hint: "<b>at</b> = specific time. <b>on</b> = days/dates. <b>in</b> = months/years/seasons.",
+      questions: [
+        { id:"e2q6",  type:"dropdown", text:"6. I wake up ___ 7 o'clock.", options:["at","on","in"], answer:"at" },
+        { id:"e2q7",  type:"dropdown", text:"7. She was born ___ 1995.", options:["at","on","in"], answer:"in" },
+        { id:"e2q8",  type:"dropdown", text:"8. The party is ___ Friday.", options:["at","on","in"], answer:"on" },
+        { id:"e2q9",  type:"dropdown", text:"9. He studies ___ the evening.", options:["at","on","in"], answer:"in" },
+        { id:"e2q10", type:"dropdown", text:"10. School starts ___ September.", options:["at","on","in"], answer:"in" }
+      ]
+    },
+    {
+      number: 3, title: "Vocabulary — Daily Routines",
+      instructions: "Write <b>morning, afternoon,</b> or <b>evening</b>.",
+      hint: "Morning = before noon. Afternoon = 12–6pm. Evening = after 6pm.",
+      questions: [
+        { id:"e2q11", type:"fill", text:"11. Brush teeth after waking up →", answer:"morning" },
+        { id:"e2q12", type:"fill", text:"12. Have lunch →", answer:"afternoon" },
+        { id:"e2q13", type:"fill", text:"13. Watch TV before sleeping →", answer:"evening" },
+        { id:"e2q14", type:"fill", text:"14. Drink coffee at sunrise →", answer:"morning" },
+        { id:"e2q15", type:"fill", text:"15. Finish work at 5pm →", answer:"afternoon" }
+      ]
+    },
+    {
+      number: 4, title: "Reading — A Busy Day",
+      instructions: "Read and answer.<br><br><i>Maria wakes up at 6 am. She runs for 30 minutes, then showers and eats breakfast. She works as a nurse from 8 am to 4 pm. In the evening she cooks dinner and reads a book before sleeping.</i>",
+      hint: "The answers are in the text — use exact words from it.",
+      questions: [
+        { id:"e2q16", type:"fill", text:"16. What time does Maria wake up?", answer:"6 am" },
+        { id:"e2q17", type:"fill", text:"17. How long does she run?", answer:"30 minutes" },
+        { id:"e2q18", type:"fill", text:"18. What is her job?", answer:"nurse" },
+        { id:"e2q19", type:"fill", text:"19. What does she do in the evening?", answer:"cooks dinner and reads a book" },
+        { id:"e2q20", type:"fill", text:"20. What time does she finish work?", answer:"4 pm" }
+      ]
+    },
+    {
+      number: 5, title: "Negative Sentences",
+      instructions: "Rewrite using <b>do not / does not</b> (or don't / doesn't).",
+      hint: "Use <b>doesn't</b> with he/she/it. Use <b>don't</b> with I/you/we/they.",
+      questions: [
+        { id:"e2q21", type:"fill", text:"21. She likes cheese. (negative)", answer:"she doesn't like cheese|she does not like cheese" },
+        { id:"e2q22", type:"fill", text:"22. They play soccer. (negative)", answer:"they don't play soccer|they do not play soccer" },
+        { id:"e2q23", type:"fill", text:"23. I eat meat. (negative)", answer:"i don't eat meat|i do not eat meat" }
+      ]
+    },
+    {
+      number: 6, title: "Irregular Verbs — Past",
+      instructions: "Write the simple past form.",
+      hint: "go→went, have→had, make→made, come→came, take→took, give→gave.",
+      questions: [
+        { id:"e2q24", type:"fill", text:"24. have →", answer:"had" },
+        { id:"e2q25", type:"fill", text:"25. come →", answer:"came" },
+        { id:"e2q26", type:"fill", text:"26. make →", answer:"made" },
+        { id:"e2q27", type:"fill", text:"27. take →", answer:"took" }
+      ]
+    },
+    {
+      number: 7, title: "Writing — My Daily Routine",
+      instructions: "Describe your typical day from morning to night.<br><b>Minimum: 70 words.</b>",
+      hint: "Use time expressions: first, then, after that, later, finally.",
+      questions: [ { id:"e2q28", type:"writing", text:"", minWords: 70 } ]
+    }
+  ]
+},
+{
+  title: "Exam 3 — Intermediate",
+  time: 40,
+  sections: [
+    {
+      number: 1, title: "Present Perfect",
+      instructions: "Choose <b>have</b> or <b>has</b>.",
+      hint: "Use <b>has</b> with he/she/it. Use <b>have</b> with I/you/we/they.",
+      questions: [
+        { id:"e3q1", type:"mc", text:"1. She ___ studied for the exam.", options:["have","has","had","is"], answer:"has" },
+        { id:"e3q2", type:"mc", text:"2. They ___ never been to Paris.", options:["has","is","have","are"], answer:"have" },
+        { id:"e3q3", type:"mc", text:"3. I ___ already eaten lunch.", options:["has","am","is","have"], answer:"have" },
+        { id:"e3q4", type:"mc", text:"4. He ___ worked here for 5 years.", options:["have","are","has","is"], answer:"has" },
+        { id:"e3q5", type:"mc", text:"5. We ___ just finished the project.", options:["has","is","are","have"], answer:"have" }
+      ]
+    },
+    {
+      number: 2, title: "Comparatives & Superlatives",
+      instructions: "Fill in the correct form of the adjective in brackets.",
+      hint: "Short adj: add <b>-er / -est</b>. Long adj: use <b>more / most</b>. Irregular: good→better→best, bad→worse→worst.",
+      questions: [
+        { id:"e3q6",  type:"fill", text:"6. This car is ___ than that one. (fast)", answer:"faster" },
+        { id:"e3q7",  type:"fill", text:"7. She is the ___ student in the class. (smart)", answer:"smartest" },
+        { id:"e3q8",  type:"fill", text:"8. Today is ___ than yesterday. (cold)", answer:"colder" },
+        { id:"e3q9",  type:"fill", text:"9. It is the ___ movie I've ever seen. (bad)", answer:"worst" },
+        { id:"e3q10", type:"fill", text:"10. He speaks English ___ than his brother. (good)", answer:"better" }
+      ]
+    },
+    {
+      number: 3, title: "Modal Verbs",
+      instructions: "Choose the correct modal verb.",
+      hint: "<b>can</b>=ability, <b>must</b>=obligation, <b>should</b>=advice, <b>might</b>=possibility.",
+      questions: [
+        { id:"e3q11", type:"mc", text:"11. You ___ wear a seatbelt. It's the law.", options:["might","should","must","can"], answer:"must" },
+        { id:"e3q12", type:"mc", text:"12. She ___ speak three languages.", options:["must","should","might","can"], answer:"can" },
+        { id:"e3q13", type:"mc", text:"13. You look tired. You ___ rest.", options:["must","might","can","should"], answer:"should" },
+        { id:"e3q14", type:"mc", text:"14. It ___ rain tomorrow. I'm not sure.", options:["must","can","should","might"], answer:"might" },
+        { id:"e3q15", type:"mc", text:"15. Students ___ not use phones in class.", options:["should","might","can","must"], answer:"must" }
+      ]
+    },
+    {
+      number: 4, title: "Reading — Climate Change",
+      instructions: "Read and answer.<br><br><i>Climate change is one of the biggest challenges of the 21st century. Rising temperatures are causing glaciers to melt, which leads to higher sea levels. Scientists say that if we reduce carbon emissions now, we can slow down the process. Renewable energy sources like solar and wind power are important solutions.</i>",
+      hint: "For yes/no questions just write yes or no. For others, find key words in the text.",
+      questions: [
+        { id:"e3q16", type:"fill", text:"16. What is melting due to rising temperatures?", answer:"glaciers" },
+        { id:"e3q17", type:"fill", text:"17. What does melting cause?", answer:"higher sea levels" },
+        { id:"e3q18", type:"fill", text:"18. What should we reduce?", answer:"carbon emissions" },
+        { id:"e3q19", type:"fill", text:"19. Name one renewable energy source.", answer:"solar|wind|wind power|solar power" },
+        { id:"e3q20", type:"fill", text:"20. Is climate change described as a small problem? (yes/no)", answer:"no" }
+      ]
+    },
+    {
+      number: 5, title: "Connectors",
+      instructions: "Choose the correct connector.",
+      hint: "<b>because</b>=reason, <b>but</b>=contrast, <b>so</b>=result, <b>although</b>=contrast same clause, <b>therefore</b>=formal result.",
+      questions: [
+        { id:"e3q21", type:"mc", text:"21. I was tired ___ I went to bed early.", options:["but","although","so","because"], answer:"so" },
+        { id:"e3q22", type:"mc", text:"22. She studied hard ___ she failed the test.", options:["so","because","therefore","but"], answer:"but" },
+        { id:"e3q23", type:"mc", text:"23. He didn't go to work ___ he was sick.", options:["but","so","although","because"], answer:"because" },
+        { id:"e3q24", type:"mc", text:"24. ___ it was raining, we went for a walk.", options:["Because","So","Although","Therefore"], answer:"although" },
+        { id:"e3q25", type:"mc", text:"25. The roads were icy; ___, we drove slowly.", options:["but","although","because","therefore"], answer:"therefore" }
+      ]
+    },
+    {
+      number: 6, title: "Irregular Verbs",
+      instructions: "Write the simple past form.",
+      hint: "write→wrote, speak→spoke, know→knew, begin→began, think→thought.",
+      questions: [
+        { id:"e3q26", type:"fill", text:"26. write →", answer:"wrote" },
+        { id:"e3q27", type:"fill", text:"27. speak →", answer:"spoke" },
+        { id:"e3q28", type:"fill", text:"28. know →", answer:"knew" },
+        { id:"e3q29", type:"fill", text:"29. begin →", answer:"began" },
+        { id:"e3q30", type:"fill", text:"30. think →", answer:"thought" }
+      ]
+    },
+    {
+      number: 7, title: "Essay Writing",
+      instructions: "Write a short essay about the advantages and disadvantages of social media.<br><b>Minimum: 100 words.</b>",
+      hint: "Use: On one hand… / On the other hand… / In conclusion… / For example…",
+      questions: [ { id:"e3q31", type:"writing", text:"", minWords: 100 } ]
+    }
+  ]
+}
+];
+
+let currentExam = 0;
+let timerInterval = null;
+let secondsLeft = 0;
+let submitted = false;
+
+function loadExam() {
+  currentExam = parseInt(document.getElementById('examSelect').value);
+  clearInterval(timerInterval);
+  submitted = false;
+  document.getElementById('results-panel').style.display = 'none';
+  renderExam(currentExam);
+  startTimer(EXAMS[currentExam].time);
+  updateProgress();
+}
+
+function renderExam(idx) {
+  const exam = EXAMS[idx];
+  let html = '<p class="exam-title">' + exam.title + '</p>';
+
+  exam.sections.forEach(function(section) {
+    html += '<div class="section" id="section-' + section.number + '">';
+    html += '<div class="section-head">';
+    html += '<span class="section-tag">Section ' + section.number + '</span>';
+    html += '<h2>' + section.title + '</h2>';
+    html += '</div>';
+    html += '<div class="section-body">';
+    html += '<div class="instructions">' + section.instructions + '</div>';
+    html += '<button class="hint-toggle" onclick="toggleHint(' + section.number + ')">Show hint</button>';
+    html += '<div class="hint-box" id="hint-' + section.number + '">' + section.hint + '</div>';
+
+    section.questions.forEach(function(q) {
+      if (q.type === 'fill') {
+        html += '<div class="question" id="wrap-' + q.id + '">';
+        html += '<label for="' + q.id + '">' + q.text + '</label>';
+        html += '<input type="text" id="' + q.id + '" placeholder="your answer" oninput="updateProgress()">';
+        html += '<div class="feedback" id="fb-' + q.id + '"></div>';
+        html += '</div>';
+      } else if (q.type === 'mc') {
+        html += '<div class="question" id="wrap-' + q.id + '">';
+        html += '<label>' + q.text + '</label>';
+        html += '<div class="mc-options">';
+        q.options.forEach(function(o) {
+          html += '<label><input type="radio" name="' + q.id + '" value="' + o + '" onchange="updateProgress()"><span>' + o + '</span></label>';
+        });
+        html += '</div>';
+        html += '<div class="feedback" id="fb-' + q.id + '"></div>';
+        html += '</div>';
+      } else if (q.type === 'dropdown') {
+        html += '<div class="question" id="wrap-' + q.id + '">';
+        html += '<label for="' + q.id + '">' + q.text + '</label>';
+        html += '<select id="' + q.id + '" onchange="updateProgress()"><option value="">-- select --</option>';
+        q.options.forEach(function(o) { html += '<option value="' + o + '">' + o + '</option>'; });
+        html += '</select>';
+        html += '<div class="feedback" id="fb-' + q.id + '"></div>';
+        html += '</div>';
+      } else if (q.type === 'writing') {
+        html += '<div class="question writing-wrap" id="wrap-' + q.id + '">';
+        html += '<textarea class="writing-area" id="' + q.id + '" placeholder="Write here..." oninput="updateWordCount(\'' + q.id + '\',' + q.minWords + ')"></textarea>';
+        html += '<div class="word-count" id="wc-' + q.id + '">0 / ' + q.minWords + ' words minimum</div>';
+        html += '<div class="feedback" id="fb-' + q.id + '"></div>';
+        html += '</div>';
+      }
+    });
+    html += '</div>';
+    html += '</div>';
+  });
+
+  html += '<div class="button-row">';
+  html += '<button class="btn btn-primary" onclick="submitExam()">Submit Exam</button>';
+  html += '<button class="btn btn-outline" onclick="clearExam()">Clear All</button>';
+  html += '</div>';
+
+  document.getElementById('examContainer').innerHTML = html;
+}
+
+function toggleHint(n) {
+  var box = document.getElementById('hint-' + n);
+  var btn = box.previousElementSibling;
+  if (box.style.display === 'block') {
+    box.style.display = 'none';
+    btn.textContent = 'Show hint';
+  } else {
+    box.style.display = 'block';
+    btn.textContent = 'Hide hint';
+  }
+}
+
+function updateWordCount(id, min) {
+  var val = document.getElementById(id).value.trim();
+  var count = val === '' ? 0 : val.split(/\s+/).length;
+  var el = document.getElementById('wc-' + id);
+  el.textContent = count + ' / ' + min + ' words minimum';
+  el.className = 'word-count' + (count >= min ? ' ok' : '');
+}
+
+function updateProgress() {
+  var exam = EXAMS[currentExam];
+  var total = 0, answered = 0;
+  exam.sections.forEach(function(sec) {
+    sec.questions.forEach(function(q) {
+      if (q.type === 'writing') return;
+      total++;
+      var val = getAnswer(q);
+      if (val && val !== '') answered++;
+    });
+  });
+  var pct = total === 0 ? 0 : Math.round((answered / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function getAnswer(q) {
+  if (q.type === 'fill' || q.type === 'dropdown' || q.type === 'writing') {
+    var el = document.getElementById(q.id);
+    return el ? el.value : '';
+  } else if (q.type === 'mc') {
+    var sel = document.querySelector('input[name="' + q.id + '"]:checked');
+    return sel ? sel.value : '';
+  }
+  return '';
+}
+
+function normalize(s) {
+  return s.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function isCorrect(q) {
+  if (q.type === 'writing') {
+    var val = document.getElementById(q.id).value;
+    var count = val.trim() === '' ? 0 : val.trim().split(/\s+/).length;
+    return count >= q.minWords;
+  }
+  var userAns = normalize(getAnswer(q));
+  if (!userAns) return false;
+  var validAnswers = q.answer.split('|').map(function(a) { return normalize(a); });
+  return validAnswers.indexOf(userAns) !== -1;
+}
+
+function submitExam() {
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerInterval);
+
+  var exam = EXAMS[currentExam];
+  var totalScore = 0, totalQuestions = 0;
+  var sectionData = [];
+
+  exam.sections.forEach(function(section) {
+    var sectionScore = 0, sectionTotal = 0;
+
+    section.questions.forEach(function(q) {
+      sectionTotal++;
+      var correct = isCorrect(q);
+      if (correct) { sectionScore++; totalScore++; }
+      totalQuestions++;
+
+      var fb = document.getElementById('fb-' + q.id);
+      if (q.type === 'writing') {
+        var val = document.getElementById(q.id).value;
+        var count = val.trim() === '' ? 0 : val.trim().split(/\s+/).length;
+        if (correct) {
+          fb.className = 'feedback correct';
+          fb.textContent = 'Correct — ' + count + ' words.';
+        } else {
+          fb.className = 'feedback wrong';
+          fb.textContent = 'Too short: ' + count + ' words written, ' + q.minWords + ' required.';
+        }
+        document.getElementById(q.id).disabled = true;
+      } else {
+        var userAns = getAnswer(q);
+        if (correct) {
+          fb.className = 'feedback correct';
+          fb.textContent = 'Correct';
+        } else {
+          var displayAnswer = q.answer.split('|').join(' or ');
+          fb.className = 'feedback wrong';
+          fb.textContent = (userAns ? 'Incorrect — you wrote "' + userAns + '". ' : 'No answer. ') + 'Correct answer: ' + displayAnswer;
+        }
+        if (q.type === 'fill') { document.getElementById(q.id).disabled = true; }
+        else if (q.type === 'mc') { document.querySelectorAll('input[name="' + q.id + '"]').forEach(function(r){ r.disabled = true; }); }
+        else if (q.type === 'dropdown') { document.getElementById(q.id).disabled = true; }
+      }
+    });
+
+    sectionData.push({ title: section.title, score: sectionScore, total: sectionTotal });
+  });
+
+  showResults(totalScore, totalQuestions, sectionData);
+}
+
+function showResults(score, total, sections) {
+  var pct = Math.round((score / total) * 100);
+  var letterGrade, gradeColor;
+  if (pct >= 90) { letterGrade = 'A+'; gradeColor = '#1a7a1a'; }
+  else if (pct >= 80) { letterGrade = 'A'; gradeColor = '#2e7d32'; }
+  else if (pct >= 70) { letterGrade = 'B'; gradeColor = '#1565c0'; }
+  else if (pct >= 60) { letterGrade = 'C'; gradeColor = '#e65100'; }
+  else { letterGrade = 'F'; gradeColor = '#c0392b'; }
+
+  document.getElementById('scoreBig').textContent = score + ' / ' + total;
+  document.getElementById('scorePct').textContent = pct + '%';
+  document.getElementById('scoreMsg').textContent = getEncouragement(pct);
+  document.getElementById('gradeBadgeWrap').innerHTML = '<span class="grade-badge" style="background:' + gradeColor + ';color:white">' + letterGrade + '</span>';
+
+  var tableHTML = '<table><thead><tr><th>Section</th><th>Score</th><th>%</th></tr></thead><tbody>';
+  sections.forEach(function(s) {
+    var sp = Math.round((s.score / s.total) * 100);
+    var color = sp >= 70 ? '#166534' : sp >= 50 ? '#92400e' : '#9b1c1c';
+    tableHTML += '<tr><td>' + s.title + '</td><td>' + s.score + ' / ' + s.total + '</td><td class="pct-cell" style="color:' + color + '">' + sp + '%</td></tr>';
+  });
+  tableHTML += '</tbody></table>';
+  document.getElementById('sectionScores').innerHTML = tableHTML;
+
+  var panel = document.getElementById('results-panel');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function getEncouragement(pct) {
+  if (pct === 100) return 'Perfect score — outstanding performance.';
+  if (pct >= 90) return 'Excellent work.';
+  if (pct >= 80) return 'Great result, keep it up.';
+  if (pct >= 70) return 'Good — review the sections below 70%.';
+  if (pct >= 60) return 'Passing, but there is room to improve.';
+  return 'Keep studying — focus on the sections with the lowest scores.';
+}
+
+function reviewAnswers() {
+  document.getElementById('examContainer').scrollIntoView({ behavior: 'smooth' });
+}
+
+function retakeExam() {
+  document.getElementById('results-panel').style.display = 'none';
+  submitted = false;
+  renderExam(currentExam);
+  startTimer(EXAMS[currentExam].time);
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextExam() {
+  var next = (currentExam + 1) % EXAMS.length;
+  document.getElementById('examSelect').value = next;
+  loadExam();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function clearExam() {
+  if (submitted) return;
+  renderExam(currentExam);
+  updateProgress();
+}
+
+function startTimer(minutes) {
+  clearInterval(timerInterval);
+  secondsLeft = minutes * 60;
+  updateTimerDisplay();
+  timerInterval = setInterval(function() {
+    secondsLeft--;
+    updateTimerDisplay();
+    if (secondsLeft <= 60) { document.getElementById('timerDisplay').classList.add('warning'); }
+    if (secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      if (!submitted) { alert('Time is up. Submitting your exam...'); submitExam(); }
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  var m = Math.floor(secondsLeft / 60);
+  var s = secondsLeft % 60;
+  document.getElementById('timerDisplay').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+loadExam();
+</script>
+</body>
+</html>
